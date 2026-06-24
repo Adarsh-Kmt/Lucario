@@ -8,6 +8,10 @@ const (
 	CreatePage Operation = iota
 	InsertInternalNodeEntry
 	InsertLeafNodeEntry
+	SplitInternalNode
+	SplitLeafNode
+	UpdateRootNodePageId
+	UpdateFirstLeafNodePageId
 )
 
 type WALRecord struct {
