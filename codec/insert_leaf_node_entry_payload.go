@@ -9,42 +9,42 @@ type InsertInternalNodePayload struct {
 	RightChildNodePageId uint64
 }
 
-func EncodeInsertInternalNodePayload(Payload InsertInternalNodePayload) []byte {
+func EncodeInsertInternalNodePayload(payload InsertInternalNodePayload) []byte {
 
 	data := make([]byte, 0)
 
-	data = binary.BigEndian.AppendUint64(data, Payload.PageId)
+	data = binary.BigEndian.AppendUint64(data, payload.PageId)
 
-	data = binary.BigEndian.AppendUint16(data, uint16(len(Payload.Key)))
-	data = append(data, Payload.Key...)
+	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.Key)))
+	data = append(data, payload.Key...)
 
-	data = binary.BigEndian.AppendUint64(data, Payload.LeftChildNodePageId)
-	data = binary.BigEndian.AppendUint64(data, Payload.RightChildNodePageId)
+	data = binary.BigEndian.AppendUint64(data, payload.LeftChildNodePageId)
+	data = binary.BigEndian.AppendUint64(data, payload.RightChildNodePageId)
 
 	return data
 }
 
 func DecodeInsertInternalNodePayload(data []byte) InsertInternalNodePayload {
 
-	Payload := InsertInternalNodePayload{}
+	payload := InsertInternalNodePayload{}
 
 	pointer := 0
 
-	Payload.PageId = binary.BigEndian.Uint64(data[pointer : pointer+8])
+	payload.PageId = binary.BigEndian.Uint64(data[pointer : pointer+8])
 
 	pointer += 8
 
 	keyLength := binary.BigEndian.Uint16(data[pointer:])
 	pointer += 2
 
-	Payload.Key = data[pointer : pointer+int(keyLength)]
+	payload.Key = data[pointer : pointer+int(keyLength)]
 
 	pointer += int(keyLength)
 
-	Payload.LeftChildNodePageId = binary.BigEndian.Uint64(data[pointer:])
+	payload.LeftChildNodePageId = binary.BigEndian.Uint64(data[pointer:])
 	pointer += 8
 
-	Payload.RightChildNodePageId = binary.BigEndian.Uint64(data[pointer:])
+	payload.RightChildNodePageId = binary.BigEndian.Uint64(data[pointer:])
 
-	return Payload
+	return payload
 }

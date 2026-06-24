@@ -8,42 +8,42 @@ type InsertLeafNodeEntryPayload struct {
 	Value  []byte
 }
 
-func EncodeInsertLeafNodeEntryPayload(Payload InsertLeafNodeEntryPayload) []byte {
+func EncodeInsertLeafNodeEntryPayload(payload InsertLeafNodeEntryPayload) []byte {
 
 	data := make([]byte, 0)
 
-	data = binary.BigEndian.AppendUint64(data, Payload.PageId)
+	data = binary.BigEndian.AppendUint64(data, payload.PageId)
 
-	data = binary.BigEndian.AppendUint16(data, uint16(len(Payload.Key)))
-	data = append(data, Payload.Key...)
+	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.Key)))
+	data = append(data, payload.Key...)
 
-	data = binary.BigEndian.AppendUint16(data, uint16(len(Payload.Value)))
-	data = append(data, Payload.Value...)
+	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.Value)))
+	data = append(data, payload.Value...)
 
 	return data
 }
 
 func DecodeInsertLeafNodeEntryPayload(data []byte) InsertLeafNodeEntryPayload {
 
-	Payload := InsertLeafNodeEntryPayload{}
+	payload := InsertLeafNodeEntryPayload{}
 
 	pointer := 0
 
-	Payload.PageId = binary.BigEndian.Uint64(data[pointer : pointer+8])
+	payload.PageId = binary.BigEndian.Uint64(data[pointer : pointer+8])
 
 	pointer += 8
 
 	keyLength := binary.BigEndian.Uint16(data[pointer:])
 	pointer += 2
 
-	Payload.Key = data[pointer : pointer+int(keyLength)]
+	payload.Key = data[pointer : pointer+int(keyLength)]
 
 	pointer += int(keyLength)
 
 	valueLength := binary.BigEndian.Uint16(data[pointer:])
 	pointer += 2
 
-	Payload.Value = data[pointer : pointer+int(valueLength)]
+	payload.Value = data[pointer : pointer+int(valueLength)]
 
-	return Payload
+	return payload
 }

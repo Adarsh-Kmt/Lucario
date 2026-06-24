@@ -7,22 +7,22 @@ type CreatePagePayload struct {
 	PageType byte
 }
 
-func EncodeCreatePagePayload(Payload CreatePagePayload) []byte {
+func EncodeCreatePagePayload(payload CreatePagePayload) []byte {
 
 	data := make([]byte, 0)
 
-	data = binary.BigEndian.AppendUint64(data, Payload.PageId)
+	data = binary.BigEndian.AppendUint64(data, payload.PageId)
 
-	data = append(data, Payload.PageType)
+	data = append(data, payload.PageType)
 	return data
 }
 
 func DecodeCreatePagePayload(data []byte) CreatePagePayload {
 
-	Payload := CreatePagePayload{}
+	payload := CreatePagePayload{}
 
-	Payload.PageId = binary.BigEndian.Uint64(data[:8])
-	Payload.PageType = data[8]
+	payload.PageId = binary.BigEndian.Uint64(data[:8])
+	payload.PageType = data[8]
 
-	return Payload
+	return payload
 }
