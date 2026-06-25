@@ -6,6 +6,7 @@ type Operation uint16
 
 const (
 	CreatePage Operation = iota
+	DeletePage
 	InsertInternalNodeEntry
 	InsertLeafNodeEntry
 	SplitInternalNode
