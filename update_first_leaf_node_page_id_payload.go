@@ -1,4 +1,4 @@
-package codec
+package lucario
 
 import "encoding/binary"
 
