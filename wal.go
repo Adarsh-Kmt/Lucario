@@ -7,8 +7,6 @@ import (
 	"os"
 	"sync"
 	"sync/atomic"
-
-	"github.com/Adarsh-Kmt/Lucario/codec"
 )
 
 var (
@@ -20,7 +18,7 @@ type WAL struct {
 	file             *os.File
 	currLSN          uint64
 	checkpointOffset uint64
-	walMetadataCodec codec.WALMetadataCodec
+	walMetadataCodec WALMetadataCodec
 	mutex            *sync.Mutex
 }
 
@@ -61,7 +59,7 @@ func NewWAL() (*WAL, error) {
 
 	wal := &WAL{
 		file:             file,
-		walMetadataCodec: codec.NewWALMetadataCodec(),
+		walMetadataCodec: NewWALMetadataCodec(),
 		mutex:            &sync.Mutex{},
 	}
 
@@ -131,19 +129,19 @@ func (wal *WAL) NewWALIterator() (*WALIterator, error) {
 	}, nil
 }
 
-func (wal *WAL) Log(operation codec.Operation, payload []byte) (LSN uint64, err error) {
+func (wal *WAL) Log(operation Operation, payload []byte) (LSN uint64, err error) {
 	wal.mutex.Lock()
 	defer wal.mutex.Unlock()
 
 	LSN = atomic.AddUint64(&wal.currLSN, 1)
 
-	record := codec.WALRecord{
+	record := WALRecord{
 		LSN:       LSN,
 		Operation: operation,
 		Payload:   payload,
 	}
 
-	walRecordBytes := codec.EncodeWALRecord(record)
+	walRecordBytes := EncodeWALRecord(record)
 
 	data := make([]byte, 0)
 

@@ -2,8 +2,6 @@ package lucario
 
 import (
 	"encoding/binary"
-
-	"github.com/Adarsh-Kmt/Lucario/codec"
 )
 
 type WALIterator struct {
@@ -20,14 +18,14 @@ func (iterator *WALIterator) HasNext() bool {
 	return true
 }
 
-func (iterator *WALIterator) GetRecord() (codec.WALRecord, error) {
+func (iterator *WALIterator) GetRecord() (WALRecord, error) {
 
 	walRecordLengthBytes := make([]byte, 8)
 
 	_, err := iterator.wal.file.Read(walRecordLengthBytes)
 
 	if err != nil {
-		return codec.WALRecord{}, err
+		return WALRecord{}, err
 	}
 
 	walRecordLength := binary.BigEndian.Uint64(walRecordLengthBytes)
@@ -37,12 +35,12 @@ func (iterator *WALIterator) GetRecord() (codec.WALRecord, error) {
 	_, err = iterator.wal.file.Read(walRecordBytes)
 
 	if err != nil {
-		return codec.WALRecord{}, err
+		return WALRecord{}, err
 	}
 
 	iterator.currOffset += uint64(8 + len(walRecordBytes))
 
-	return codec.DecodeWALRecord(walRecordBytes), nil
+	return DecodeWALRecord(walRecordBytes), nil
 }
 
 func (iterator *WALIterator) Close() {
