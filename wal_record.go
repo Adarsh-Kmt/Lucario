@@ -9,6 +9,7 @@ const (
 	DeletePage
 	InsertInternalNodeEntry
 	InsertLeafNodeEntry
+	UpdateLeafNodeEntry
 	SplitInternalNode
 	SplitLeafNode
 	UpdateRootNodePageId
