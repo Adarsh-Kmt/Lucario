@@ -232,13 +232,19 @@ func (wal *WAL) LogUpdateFirstLeafNodePageIdOperation(bPlusTreeId uint64, firstL
 func (wal *WAL) LogSplitInternalNodeOperation(leftInternalNodePageId uint64,
 	rightInternalNodePageId uint64,
 	parentNodePageId uint64,
-	separatorKeyIndex uint16) (LSN uint64, err error) {
+	separatorKeyIndex uint16,
+	insertKey []byte,
+	insertLeftNodePageId uint64,
+	insertRightNodePageId uint64) (LSN uint64, err error) {
 
 	payload := SplitInternalNodePayload{
 		LeftInternalNodePageId:  leftInternalNodePageId,
 		RightInternalNodePageId: rightInternalNodePageId,
 		ParentNodePageId:        parentNodePageId,
 		SeparatorKeyIndex:       separatorKeyIndex,
+		InsertKey:               insertKey,
+		InsertLeftNodePageId:    insertLeftNodePageId,
+		InsertRightNodePageId:   insertRightNodePageId,
 	}
 	return wal.log(SplitInternalNode, EncodeSplitInternalNodePayload(payload))
 }
@@ -246,13 +252,17 @@ func (wal *WAL) LogSplitInternalNodeOperation(leftInternalNodePageId uint64,
 func (wal *WAL) LogSplitLeafNodeOperation(leftLeafNodePageId uint64,
 	rightLeafNodePageId uint64,
 	parentNodePageId uint64,
-	separatorKeyIndex uint16) (LSN uint64, err error) {
+	separatorKeyIndex uint16,
+	insertKey []byte,
+	insertValue []byte) (LSN uint64, err error) {
 
 	payload := SplitLeafNodePayload{
 		LeftLeafNodePageId:  leftLeafNodePageId,
 		RightLeafNodePageId: rightLeafNodePageId,
 		ParentNodePageId:    parentNodePageId,
 		SeparatorKeyIndex:   separatorKeyIndex,
+		InsertKey:           insertKey,
+		InsertValue:         insertValue,
 	}
 	return wal.log(SplitLeafNode, EncodeSplitLeafNodePayload(payload))
 }
