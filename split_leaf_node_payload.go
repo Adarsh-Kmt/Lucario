@@ -7,8 +7,12 @@ type SplitLeafNodePayload struct {
 	RightLeafNodePageId uint64
 	ParentNodePageId    uint64
 	SeparatorKeyIndex   uint16
-	InsertKey           []byte
-	InsertValue         []byte
+
+	InsertKey   []byte
+	InsertValue []byte
+
+	ElementsLength uint16
+	Elements       []byte
 }
 
 func EncodeSplitLeafNodePayload(payload SplitLeafNodePayload) []byte {
@@ -23,6 +27,9 @@ func EncodeSplitLeafNodePayload(payload SplitLeafNodePayload) []byte {
 	data = append(data, payload.InsertKey...)
 	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.InsertValue)))
 	data = append(data, payload.InsertValue...)
+
+	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.Elements)))
+	data = append(data, payload.Elements...)
 	return data
 }
 
@@ -52,6 +59,11 @@ func DecodeSplitLeafNodePayload(data []byte) SplitLeafNodePayload {
 
 	payload.InsertValue = data[pointer : pointer+int(insertValueLength)]
 	pointer += int(insertValueLength)
+
+	payload.ElementsLength = binary.BigEndian.Uint16(data[pointer:])
+	pointer += 2
+
+	payload.Elements = data[pointer:]
 
 	return payload
 }

@@ -7,9 +7,13 @@ type SplitInternalNodePayload struct {
 	RightInternalNodePageId uint64
 	ParentNodePageId        uint64
 	SeparatorKeyIndex       uint16
-	InsertKey               []byte
-	InsertLeftNodePageId    uint64
-	InsertRightNodePageId   uint64
+
+	InsertKey             []byte
+	InsertLeftNodePageId  uint64
+	InsertRightNodePageId uint64
+
+	ElementsLength uint16
+	Elements       []byte
 }
 
 func EncodeSplitInternalNodePayload(payload SplitInternalNodePayload) []byte {
@@ -25,6 +29,8 @@ func EncodeSplitInternalNodePayload(payload SplitInternalNodePayload) []byte {
 	data = binary.BigEndian.AppendUint64(data, payload.InsertLeftNodePageId)
 	data = binary.BigEndian.AppendUint64(data, payload.InsertRightNodePageId)
 
+	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.Elements)))
+	data = append(data, payload.Elements...)
 	return data
 }
 
@@ -52,6 +58,12 @@ func DecodeSplitInternalNodePayload(data []byte) SplitInternalNodePayload {
 	payload.InsertLeftNodePageId = binary.BigEndian.Uint64(data[pointer:])
 	pointer += 8
 	payload.InsertRightNodePageId = binary.BigEndian.Uint64(data[pointer:])
+	pointer += 8
+
+	payload.ElementsLength = binary.BigEndian.Uint16(data[pointer:])
+	pointer += 2
+
+	payload.Elements = data[pointer:]
 
 	return payload
 }
