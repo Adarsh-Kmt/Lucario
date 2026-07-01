@@ -32,7 +32,12 @@ func EncodeWALRecord(record WALRecord) []byte {
 	data = binary.BigEndian.AppendUint64(data, uint64(len(record.Payload)))
 	data = append(data, record.Payload...)
 
-	return data
+	finalPayload := make([]byte, 0)
+	finalPayload = binary.BigEndian.AppendUint64(finalPayload, uint64(len(data)))
+	finalPayload = append(finalPayload, data...)
+	finalPayload = binary.BigEndian.AppendUint64(finalPayload, uint64(len(data)))
+
+	return finalPayload
 }
 
 func DecodeWALRecord(data []byte) WALRecord {
