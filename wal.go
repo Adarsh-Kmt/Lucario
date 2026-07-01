@@ -127,8 +127,8 @@ func (wal *WAL) NewWALIterator() (*WALIterator, error) {
 
 	return &WALIterator{
 		wal:         wal,
-		currOffset:  0,
-		walFileSize: uint64(info.Size()),
+		CurrOffset:  0,
+		WalFileSize: uint64(info.Size()),
 	}, nil
 }
 
