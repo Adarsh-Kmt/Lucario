@@ -22,8 +22,7 @@ type WAL struct {
 	mutex            *sync.Mutex
 }
 
-func NewWAL() (*WAL, error) {
-	filePath := "/lucario.wal"
+func NewWAL(filePath string) (*WAL, error) {
 
 	var file *os.File
 	var fileExists bool
