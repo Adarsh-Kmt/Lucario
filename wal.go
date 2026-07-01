@@ -80,7 +80,7 @@ func NewWAL(filePath string) (*WAL, error) {
 		slog.Info("BYTE ARRAY CONTENTS ", "last WAL record length", lastWALRecordLengthBytes)
 		lastWALRecordLength := binary.BigEndian.Uint64(lastWALRecordLengthBytes)
 
-		lastWALRecordBytes := make([]byte, int(lastWALRecordLength)+8)
+		lastWALRecordBytes := make([]byte, int(lastWALRecordLength))
 
 		_, err = wal.file.Seek(stat.Size()-int64(lastWALRecordLength)-8, io.SeekStart)
 		if err != nil {

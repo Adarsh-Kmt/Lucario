@@ -37,7 +37,7 @@ func (iterator *WALIterator) GetRecord() (WALRecord, error) {
 		return WALRecord{}, err
 	}
 
-	walRecordLength := binary.BigEndian.Uint64(walRecordLengthBytes)
+	walRecordLength := binary.BigEndian.Uint64(walRecordLengthBytes) + 8
 
 	walRecordBytes := make([]byte, walRecordLength)
 
@@ -47,9 +47,9 @@ func (iterator *WALIterator) GetRecord() (WALRecord, error) {
 		return WALRecord{}, err
 	}
 
-	iterator.CurrOffset += uint64(8 + len(walRecordBytes))
+	iterator.CurrOffset += uint64(len(walRecordBytes))
 
-	return DecodeWALRecord(walRecordBytes), nil
+	return DecodeWALRecord(walRecordBytes[:int(walRecordLength)]), nil
 }
 
 func (iterator *WALIterator) Close() {
