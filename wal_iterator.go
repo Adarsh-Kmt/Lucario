@@ -47,7 +47,7 @@ func (iterator *WALIterator) GetRecord() (WALRecord, error) {
 		return WALRecord{}, err
 	}
 
-	iterator.CurrOffset += uint64(len(walRecordBytes))
+	iterator.CurrOffset += 8 + uint64(len(walRecordBytes))
 
 	return DecodeWALRecord(walRecordBytes[:int(walRecordLength)]), nil
 }
