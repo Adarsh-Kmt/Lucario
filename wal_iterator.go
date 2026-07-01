@@ -13,7 +13,7 @@ type WALIterator struct {
 
 func (iterator *WALIterator) HasNext() bool {
 
-	if iterator.CurrOffset <= iterator.WalFileSize {
+	if iterator.CurrOffset < iterator.WalFileSize {
 		return true
 	}
 	return false
