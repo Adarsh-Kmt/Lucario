@@ -14,9 +14,9 @@ type WALIterator struct {
 func (iterator *WALIterator) HasNext() bool {
 
 	if iterator.CurrOffset <= iterator.WalFileSize {
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 func (iterator *WALIterator) GetCurrOffset() uint64 {
