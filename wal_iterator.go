@@ -2,6 +2,7 @@ package lucario
 
 import (
 	"encoding/binary"
+	"io"
 )
 
 type WALIterator struct {
@@ -12,7 +13,7 @@ type WALIterator struct {
 
 func (iterator *WALIterator) HasNext() bool {
 
-	if iterator.currOffset == iterator.walFileSize {
+	if iterator.currOffset <= iterator.walFileSize {
 		return false
 	}
 	return true
@@ -22,17 +23,17 @@ func (iterator *WALIterator) GetRecord() (WALRecord, error) {
 
 	walRecordLengthBytes := make([]byte, 8)
 
-	_, err := iterator.wal.file.Read(walRecordLengthBytes)
+	_, err := io.ReadFull(iterator.wal.file, walRecordLengthBytes)
 
 	if err != nil {
 		return WALRecord{}, err
 	}
 
-	walRecordLength := binary.BigEndian.Uint64(walRecordLengthBytes)
+	walRecordLength := binary.BigEndian.Uint64(walRecordLengthBytes) + 8
 
 	walRecordBytes := make([]byte, walRecordLength)
 
-	_, err = iterator.wal.file.Read(walRecordBytes)
+	_, err = io.ReadFull(iterator.wal.file, walRecordBytes)
 
 	if err != nil {
 		return WALRecord{}, err

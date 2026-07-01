@@ -3,6 +3,7 @@ package lucario
 import (
 	"encoding/binary"
 	"errors"
+	"io"
 	"log/slog"
 	"os"
 	"sync"
@@ -15,11 +16,9 @@ var (
 )
 
 type WAL struct {
-	file             *os.File
-	currLSN          uint64
-	checkpointOffset uint64
-	walMetadataCodec WALMetadataCodec
-	mutex            *sync.Mutex
+	file    *os.File
+	currLSN uint64
+	mutex   *sync.Mutex
 }
 
 func NewWAL(filePath string) (*WAL, error) {
@@ -57,45 +56,48 @@ func NewWAL(filePath string) (*WAL, error) {
 	}
 
 	wal := &WAL{
-		file:             file,
-		walMetadataCodec: NewWALMetadataCodec(),
-		mutex:            &sync.Mutex{},
+		file:  file,
+		mutex: &sync.Mutex{},
 	}
 
 	if !fileExists || stat.Size() == 0 {
-
-		metadataBytes := wal.walMetadataCodec.EncodeWALMetadata(0, uint64(wal.walMetadataCodec.MetadataLength))
-		if _, err := file.Write(metadataBytes); err != nil {
-			return nil, err
-		}
 		wal.currLSN = 0
-		wal.checkpointOffset = uint64(wal.walMetadataCodec.MetadataLength)
 	} else {
 
-		metadataBytes := make([]byte, wal.walMetadataCodec.MetadataLength)
-		if _, err := wal.file.ReadAt(metadataBytes, 0); err != nil {
-			return nil, err
-		}
-		wal.currLSN, wal.checkpointOffset = wal.walMetadataCodec.DecodeWALMetadata(metadataBytes)
+		lastWALRecordLengthBytes := make([]byte, 8)
 
-		if _, err := file.Seek(0, 2); err != nil {
+		_, err = wal.file.Seek(stat.Size()-8, io.SeekStart)
+		if err != nil {
 			return nil, err
 		}
+
+		_, err = io.ReadFull(wal.file, lastWALRecordLengthBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		lastWALRecordLength := binary.BigEndian.Uint64(lastWALRecordLengthBytes)
+
+		lastWALRecordBytes := make([]byte, int(lastWALRecordLength)+8)
+
+		_, err = wal.file.Seek(stat.Size()-int64(lastWALRecordLength)-8, io.SeekStart)
+		if err != nil {
+			return nil, err
+		}
+		_, err = io.ReadFull(wal.file, lastWALRecordBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		lastWALRecord := DecodeWALRecord(lastWALRecordBytes)
+
+		wal.currLSN = lastWALRecord.LSN
 	}
 
 	return wal, nil
 }
 
 func (wal *WAL) Close() error {
-
-	metadataBytes := wal.walMetadataCodec.EncodeWALMetadata(wal.currLSN, wal.checkpointOffset)
-
-	if _, err := wal.file.Seek(0, 0); err != nil {
-		return err
-	}
-	if _, err := wal.file.Write(metadataBytes); err != nil {
-		return err
-	}
 
 	if err := wal.file.Sync(); err != nil {
 		return err
@@ -107,7 +109,7 @@ func (wal *WAL) NewWALIterator() (*WALIterator, error) {
 
 	wal.mutex.Lock()
 
-	_, err := wal.file.Seek(int64(wal.checkpointOffset), 0)
+	_, err := wal.file.Seek(0, 0)
 
 	if err != nil {
 		wal.mutex.Unlock()
@@ -123,7 +125,7 @@ func (wal *WAL) NewWALIterator() (*WALIterator, error) {
 
 	return &WALIterator{
 		wal:         wal,
-		currOffset:  wal.checkpointOffset,
+		currOffset:  0,
 		walFileSize: uint64(info.Size()),
 	}, nil
 }
@@ -142,12 +144,7 @@ func (wal *WAL) log(operation Operation, payload []byte) (LSN uint64, err error)
 
 	walRecordBytes := EncodeWALRecord(record)
 
-	data := make([]byte, 0)
-
-	data = binary.BigEndian.AppendUint64(data, uint64(len(walRecordBytes)))
-	data = append(data, walRecordBytes...)
-
-	if _, err := wal.file.Write(data); err != nil {
+	if _, err := wal.file.Write(walRecordBytes); err != nil {
 		slog.Error(err.Error(), "at", "Log")
 		return 0, ErrWrite
 	}
