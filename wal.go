@@ -61,11 +61,13 @@ func NewWAL(filePath string) (*WAL, error) {
 	}
 
 	if !fileExists || stat.Size() == 0 {
+		slog.Info("WAL file does not exist")
 		wal.currLSN = 0
 	} else {
-
+		slog.Info("WAL file exists")
 		lastWALRecordLengthBytes := make([]byte, 8)
 
+		slog.Info("SEEK", "TO", stat.Size()-8)
 		_, err = wal.file.Seek(stat.Size()-8, io.SeekStart)
 		if err != nil {
 			return nil, err
@@ -75,7 +77,7 @@ func NewWAL(filePath string) (*WAL, error) {
 		if err != nil {
 			return nil, err
 		}
-
+		slog.Info("BYTE ARRAY CONTENTS ", "last WAL record length", lastWALRecordLengthBytes)
 		lastWALRecordLength := binary.BigEndian.Uint64(lastWALRecordLengthBytes)
 
 		lastWALRecordBytes := make([]byte, int(lastWALRecordLength)+8)

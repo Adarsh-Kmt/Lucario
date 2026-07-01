@@ -1,6 +1,9 @@
 package lucario
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"log/slog"
+)
 
 type Operation uint16
 
@@ -56,6 +59,8 @@ func DecodeWALRecord(data []byte) WALRecord {
 	pointer += 8
 
 	record.Payload = data[pointer : pointer+int(payloadLength)]
+
+	slog.Info("WAl record decoded", "LSN", record.LSN, "Operation", record.Operation)
 
 	return record
 }
