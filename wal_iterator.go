@@ -37,7 +37,7 @@ func (iterator *WALIterator) GetRecord() (WALRecord, error) {
 		return WALRecord{}, err
 	}
 
-	walRecordLength := binary.BigEndian.Uint64(walRecordLengthBytes) + 8
+	walRecordLength := binary.BigEndian.Uint64(walRecordLengthBytes)
 
 	walRecordBytes := make([]byte, walRecordLength)
 
