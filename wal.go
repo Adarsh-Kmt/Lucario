@@ -15,6 +15,22 @@ var (
 	ErrEndOfWAL = errors.New("end of WAL")
 )
 
+type Operation uint16
+
+const (
+	CreatePage Operation = iota
+	DeletePage
+	InsertInternalNodeEntry
+	InsertLeafNodeEntry
+	UpdateLeafNodeEntry
+	SplitInternalNode
+	SplitLeafNode
+	UpdateRootNodePageId
+	UpdateFirstLeafNodePageId
+	BeginOperation
+	CommitOperation
+)
+
 type WAL struct {
 	file    *os.File
 	currLSN uint64
@@ -273,4 +289,14 @@ func (wal *WAL) LogSplitLeafNodeOperation(leftLeafNodePageId uint64,
 		Elements:            elements,
 	}
 	return wal.log(SplitLeafNode, EncodeSplitLeafNodePayload(payload))
+}
+
+func (wal *WAL) LogBeginOperation() (LSN uint64, err error) {
+
+	return wal.log(BeginOperation, make([]byte, 0))
+}
+
+func (wal *WAL) LogCommitOperation() (LSN uint64, err error) {
+
+	return wal.log(CommitOperation, make([]byte, 0))
 }

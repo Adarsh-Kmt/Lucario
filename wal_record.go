@@ -5,20 +5,6 @@ import (
 	"log/slog"
 )
 
-type Operation uint16
-
-const (
-	CreatePage Operation = iota
-	DeletePage
-	InsertInternalNodeEntry
-	InsertLeafNodeEntry
-	UpdateLeafNodeEntry
-	SplitInternalNode
-	SplitLeafNode
-	UpdateRootNodePageId
-	UpdateFirstLeafNodePageId
-)
-
 type WALRecord struct {
 	LSN       uint64
 	Operation Operation
