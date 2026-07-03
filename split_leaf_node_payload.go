@@ -5,7 +5,6 @@ import "encoding/binary"
 type SplitLeafNodePayload struct {
 	LeftLeafNodePageId  uint64
 	RightLeafNodePageId uint64
-	ParentNodePageId    uint64
 	SeparatorKeyIndex   uint16
 
 	NextLeafNodePageId uint64
@@ -23,7 +22,6 @@ func EncodeSplitLeafNodePayload(payload SplitLeafNodePayload) []byte {
 
 	data = binary.BigEndian.AppendUint64(data, payload.LeftLeafNodePageId)
 	data = binary.BigEndian.AppendUint64(data, payload.RightLeafNodePageId)
-	data = binary.BigEndian.AppendUint64(data, payload.ParentNodePageId)
 	data = binary.BigEndian.AppendUint16(data, payload.SeparatorKeyIndex)
 	data = binary.BigEndian.AppendUint64(data, payload.NextLeafNodePageId)
 	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.InsertKey)))
@@ -44,8 +42,6 @@ func DecodeSplitLeafNodePayload(data []byte) SplitLeafNodePayload {
 	payload.LeftLeafNodePageId = binary.BigEndian.Uint64(data[pointer:])
 	pointer += 8
 	payload.RightLeafNodePageId = binary.BigEndian.Uint64(data[pointer:])
-	pointer += 8
-	payload.ParentNodePageId = binary.BigEndian.Uint64(data[pointer:])
 	pointer += 8
 
 	payload.SeparatorKeyIndex = binary.BigEndian.Uint16(data[pointer:])
