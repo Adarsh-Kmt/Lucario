@@ -15,6 +15,22 @@ var (
 	ErrEndOfWAL = errors.New("end of WAL")
 )
 
+type Operation uint16
+
+const (
+	CreatePage Operation = iota
+	DeletePage
+	InsertInternalNodeEntry
+	InsertLeafNodeEntry
+	UpdateLeafNodeEntry
+	SplitInternalNode
+	SplitLeafNode
+	UpdateRootNodePageId
+	UpdateFirstLeafNodePageId
+	BeginOperation
+	CommitOperation
+)
+
 type WAL struct {
 	file    *os.File
 	currLSN uint64
@@ -61,11 +77,13 @@ func NewWAL(filePath string) (*WAL, error) {
 	}
 
 	if !fileExists || stat.Size() == 0 {
+		slog.Info("WAL file does not exist")
 		wal.currLSN = 0
 	} else {
-
+		slog.Info("WAL file exists")
 		lastWALRecordLengthBytes := make([]byte, 8)
 
+		slog.Info("SEEK", "TO", stat.Size()-8)
 		_, err = wal.file.Seek(stat.Size()-8, io.SeekStart)
 		if err != nil {
 			return nil, err
@@ -75,10 +93,10 @@ func NewWAL(filePath string) (*WAL, error) {
 		if err != nil {
 			return nil, err
 		}
-
+		slog.Info("BYTE ARRAY CONTENTS ", "last WAL record length", lastWALRecordLengthBytes)
 		lastWALRecordLength := binary.BigEndian.Uint64(lastWALRecordLengthBytes)
 
-		lastWALRecordBytes := make([]byte, int(lastWALRecordLength)+8)
+		lastWALRecordBytes := make([]byte, int(lastWALRecordLength))
 
 		_, err = wal.file.Seek(stat.Size()-int64(lastWALRecordLength)-8, io.SeekStart)
 		if err != nil {
@@ -125,8 +143,8 @@ func (wal *WAL) NewWALIterator() (*WALIterator, error) {
 
 	return &WALIterator{
 		wal:         wal,
-		currOffset:  0,
-		walFileSize: uint64(info.Size()),
+		CurrOffset:  0,
+		WalFileSize: uint64(info.Size()),
 	}, nil
 }
 
@@ -227,7 +245,6 @@ func (wal *WAL) LogUpdateFirstLeafNodePageIdOperation(bPlusTreeId uint64, firstL
 
 func (wal *WAL) LogSplitInternalNodeOperation(leftInternalNodePageId uint64,
 	rightInternalNodePageId uint64,
-	parentNodePageId uint64,
 	separatorKeyIndex uint16,
 	insertKey []byte,
 	insertLeftNodePageId uint64,
@@ -238,7 +255,6 @@ func (wal *WAL) LogSplitInternalNodeOperation(leftInternalNodePageId uint64,
 	payload := SplitInternalNodePayload{
 		LeftInternalNodePageId:  leftInternalNodePageId,
 		RightInternalNodePageId: rightInternalNodePageId,
-		ParentNodePageId:        parentNodePageId,
 		SeparatorKeyIndex:       separatorKeyIndex,
 		InsertKey:               insertKey,
 		InsertLeftNodePageId:    insertLeftNodePageId,
@@ -251,7 +267,6 @@ func (wal *WAL) LogSplitInternalNodeOperation(leftInternalNodePageId uint64,
 
 func (wal *WAL) LogSplitLeafNodeOperation(leftLeafNodePageId uint64,
 	rightLeafNodePageId uint64,
-	parentNodePageId uint64,
 	separatorKeyIndex uint16,
 	nextLeafNodePageId uint64,
 	insertKey []byte,
@@ -262,7 +277,6 @@ func (wal *WAL) LogSplitLeafNodeOperation(leftLeafNodePageId uint64,
 	payload := SplitLeafNodePayload{
 		LeftLeafNodePageId:  leftLeafNodePageId,
 		RightLeafNodePageId: rightLeafNodePageId,
-		ParentNodePageId:    parentNodePageId,
 		SeparatorKeyIndex:   separatorKeyIndex,
 		NextLeafNodePageId:  nextLeafNodePageId,
 		InsertKey:           insertKey,
@@ -271,4 +285,14 @@ func (wal *WAL) LogSplitLeafNodeOperation(leftLeafNodePageId uint64,
 		Elements:            elements,
 	}
 	return wal.log(SplitLeafNode, EncodeSplitLeafNodePayload(payload))
+}
+
+func (wal *WAL) LogBeginOperation() (LSN uint64, err error) {
+
+	return wal.log(BeginOperation, make([]byte, 0))
+}
+
+func (wal *WAL) LogCommitOperation() (LSN uint64, err error) {
+
+	return wal.log(CommitOperation, make([]byte, 0))
 }

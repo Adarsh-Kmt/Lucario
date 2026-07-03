@@ -7,16 +7,24 @@ import (
 
 type WALIterator struct {
 	wal         *WAL
-	currOffset  uint64
-	walFileSize uint64
+	CurrOffset  uint64
+	WalFileSize uint64
 }
 
 func (iterator *WALIterator) HasNext() bool {
 
-	if iterator.currOffset <= iterator.walFileSize {
-		return false
+	if iterator.CurrOffset < iterator.WalFileSize {
+		return true
 	}
-	return true
+	return false
+}
+
+func (iterator *WALIterator) GetCurrOffset() uint64 {
+	return iterator.CurrOffset
+}
+
+func (iterator *WALIterator) GetWalFileSize() uint64 {
+	return iterator.WalFileSize
 }
 
 func (iterator *WALIterator) GetRecord() (WALRecord, error) {
@@ -39,9 +47,9 @@ func (iterator *WALIterator) GetRecord() (WALRecord, error) {
 		return WALRecord{}, err
 	}
 
-	iterator.currOffset += uint64(8 + len(walRecordBytes))
+	iterator.CurrOffset += 8 + uint64(len(walRecordBytes))
 
-	return DecodeWALRecord(walRecordBytes), nil
+	return DecodeWALRecord(walRecordBytes[:int(walRecordLength)]), nil
 }
 
 func (iterator *WALIterator) Close() {

@@ -1,19 +1,8 @@
 package lucario
 
-import "encoding/binary"
-
-type Operation uint16
-
-const (
-	CreatePage Operation = iota
-	DeletePage
-	InsertInternalNodeEntry
-	InsertLeafNodeEntry
-	UpdateLeafNodeEntry
-	SplitInternalNode
-	SplitLeafNode
-	UpdateRootNodePageId
-	UpdateFirstLeafNodePageId
+import (
+	"encoding/binary"
+	"log/slog"
 )
 
 type WALRecord struct {
@@ -56,6 +45,8 @@ func DecodeWALRecord(data []byte) WALRecord {
 	pointer += 8
 
 	record.Payload = data[pointer : pointer+int(payloadLength)]
+
+	slog.Info("WAl record decoded", "LSN", record.LSN, "Operation", record.Operation)
 
 	return record
 }
