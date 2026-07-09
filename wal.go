@@ -191,12 +191,14 @@ func (wal *WAL) LogDeletePageOperation(pageId uint64) (LSN uint64, err error) {
 	return wal.log(DeletePage, EncodeDeletePagePayload(payload))
 }
 
-func (wal *WAL) LogInsertInternalNodeEntryOperation(pageId uint64,
+func (wal *WAL) LogInsertInternalNodeEntryOperation(bPlusTreeId uint64,
+	pageId uint64,
 	key []byte,
 	leftChildNodePageId uint64,
 	rightChildNodePageId uint64) (LSN uint64, err error) {
 
 	payload := InsertInternalNodePayload{
+		BPlusTreeId:          bPlusTreeId,
 		PageId:               pageId,
 		Key:                  key,
 		LeftChildNodePageId:  leftChildNodePageId,
@@ -205,22 +207,24 @@ func (wal *WAL) LogInsertInternalNodeEntryOperation(pageId uint64,
 	return wal.log(InsertInternalNodeEntry, EncodeInsertInternalNodePayload(payload))
 }
 
-func (wal *WAL) LogInsertLeafNodeEntryOperation(pageId uint64, key []byte, value []byte) (LSN uint64, err error) {
+func (wal *WAL) LogInsertLeafNodeEntryOperation(bPlusTreeId uint64, pageId uint64, key []byte, value []byte) (LSN uint64, err error) {
 
 	payload := InsertLeafNodeEntryPayload{
-		PageId: pageId,
-		Key:    key,
-		Value:  value,
+		BPlusTreeId: bPlusTreeId,
+		PageId:      pageId,
+		Key:         key,
+		Value:       value,
 	}
 	return wal.log(InsertLeafNodeEntry, EncodeInsertLeafNodeEntryPayload(payload))
 }
 
-func (wal *WAL) LogUpdateLeafNodeEntryOperation(pageId uint64, key []byte, value []byte) (LSN uint64, err error) {
+func (wal *WAL) LogUpdateLeafNodeEntryOperation(bPlusTreeId uint64, pageId uint64, key []byte, value []byte) (LSN uint64, err error) {
 
 	payload := UpdateLeafNodeEntryPayload{
-		PageId: pageId,
-		Key:    key,
-		Value:  value,
+		BPlusTreeId: bPlusTreeId,
+		PageId:      pageId,
+		Key:         key,
+		Value:       value,
 	}
 	return wal.log(UpdateLeafNodeEntry, EncodeUpdateLeafNodeEntryPayload(payload))
 }
@@ -243,7 +247,8 @@ func (wal *WAL) LogUpdateFirstLeafNodePageIdOperation(bPlusTreeId uint64, firstL
 	return wal.log(UpdateFirstLeafNodePageId, EncodeUpdateFirstLeafNodePageIdPayload(payload))
 }
 
-func (wal *WAL) LogSplitInternalNodeOperation(leftInternalNodePageId uint64,
+func (wal *WAL) LogSplitInternalNodeOperation(bPlusTreeId uint64,
+	leftInternalNodePageId uint64,
 	rightInternalNodePageId uint64,
 	separatorKeyIndex uint16,
 	insertKey []byte,
@@ -253,6 +258,7 @@ func (wal *WAL) LogSplitInternalNodeOperation(leftInternalNodePageId uint64,
 	elements []byte) (LSN uint64, err error) {
 
 	payload := SplitInternalNodePayload{
+		BPlusTreeId:             bPlusTreeId,
 		LeftInternalNodePageId:  leftInternalNodePageId,
 		RightInternalNodePageId: rightInternalNodePageId,
 		SeparatorKeyIndex:       separatorKeyIndex,
@@ -265,7 +271,8 @@ func (wal *WAL) LogSplitInternalNodeOperation(leftInternalNodePageId uint64,
 	return wal.log(SplitInternalNode, EncodeSplitInternalNodePayload(payload))
 }
 
-func (wal *WAL) LogSplitLeafNodeOperation(leftLeafNodePageId uint64,
+func (wal *WAL) LogSplitLeafNodeOperation(bPlusTreeId uint64,
+	leftLeafNodePageId uint64,
 	rightLeafNodePageId uint64,
 	separatorKeyIndex uint16,
 	nextLeafNodePageId uint64,
@@ -275,6 +282,7 @@ func (wal *WAL) LogSplitLeafNodeOperation(leftLeafNodePageId uint64,
 	elements []byte) (LSN uint64, err error) {
 
 	payload := SplitLeafNodePayload{
+		BPlusTreeId:         bPlusTreeId,
 		LeftLeafNodePageId:  leftLeafNodePageId,
 		RightLeafNodePageId: rightLeafNodePageId,
 		SeparatorKeyIndex:   separatorKeyIndex,
@@ -287,12 +295,17 @@ func (wal *WAL) LogSplitLeafNodeOperation(leftLeafNodePageId uint64,
 	return wal.log(SplitLeafNode, EncodeSplitLeafNodePayload(payload))
 }
 
-func (wal *WAL) LogBeginOperation() (LSN uint64, err error) {
-
-	return wal.log(BeginOperation, make([]byte, 0))
+func (wal *WAL) LogBeginOperation(bPlusTreeId uint64) (LSN uint64, err error) {
+	payload := BeginOperationPayload{
+		BPlusTreeId: bPlusTreeId,
+	}
+	return wal.log(BeginOperation, EncodeBeginOperationPayload(payload))
 }
 
-func (wal *WAL) LogCommitOperation() (LSN uint64, err error) {
+func (wal *WAL) LogCommitOperation(bPlusTreeId uint64) (LSN uint64, err error) {
 
-	return wal.log(CommitOperation, make([]byte, 0))
+	payload := CommitOperationPayload{
+		BPlusTreeId: bPlusTreeId,
+	}
+	return wal.log(CommitOperation, EncodeCommitOperationPayload(payload))
 }
