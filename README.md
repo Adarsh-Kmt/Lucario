@@ -171,3 +171,4 @@ Database Ready
 
 ### Resources I Used
 - [Kevin Sookocheff's Blog](https://sookocheff.com/post/databases/write-ahead-logging/)
+- [Avtandil Ushikishvili's Blog](https://avtandili.ge/posts/trying-to-understand-wal-under-the-hood/)
