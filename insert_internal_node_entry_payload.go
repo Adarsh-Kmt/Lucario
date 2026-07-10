@@ -3,7 +3,6 @@ package lucario
 import "encoding/binary"
 
 type InsertInternalNodePayload struct {
-	BPlusTreeId          uint64
 	PageId               uint64
 	Key                  []byte
 	LeftChildNodePageId  uint64
@@ -14,7 +13,6 @@ func EncodeInsertInternalNodePayload(payload InsertInternalNodePayload) []byte {
 
 	data := make([]byte, 0)
 
-	data = binary.BigEndian.AppendUint64(data, payload.BPlusTreeId)
 	data = binary.BigEndian.AppendUint64(data, payload.PageId)
 
 	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.Key)))
@@ -32,9 +30,6 @@ func DecodeInsertInternalNodePayload(data []byte) InsertInternalNodePayload {
 
 	pointer := 0
 
-	payload.BPlusTreeId = binary.BigEndian.Uint64(data[pointer : pointer+8])
-
-	pointer += 8
 	payload.PageId = binary.BigEndian.Uint64(data[pointer : pointer+8])
 
 	pointer += 8

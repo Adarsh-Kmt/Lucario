@@ -3,7 +3,6 @@ package lucario
 import "encoding/binary"
 
 type SplitInternalNodePayload struct {
-	BPlusTreeId             uint64
 	LeftInternalNodePageId  uint64
 	RightInternalNodePageId uint64
 	SeparatorKeyIndex       uint16
@@ -20,7 +19,6 @@ func EncodeSplitInternalNodePayload(payload SplitInternalNodePayload) []byte {
 
 	data := make([]byte, 0)
 
-	data = binary.BigEndian.AppendUint64(data, payload.BPlusTreeId)
 	data = binary.BigEndian.AppendUint64(data, payload.LeftInternalNodePageId)
 	data = binary.BigEndian.AppendUint64(data, payload.RightInternalNodePageId)
 	data = binary.BigEndian.AppendUint16(data, payload.SeparatorKeyIndex)
@@ -40,9 +38,6 @@ func DecodeSplitInternalNodePayload(data []byte) SplitInternalNodePayload {
 
 	pointer := 0
 
-	payload.BPlusTreeId = binary.BigEndian.Uint64(data[pointer : pointer+8])
-
-	pointer += 8
 	payload.LeftInternalNodePageId = binary.BigEndian.Uint64(data[pointer:])
 	pointer += 8
 	payload.RightInternalNodePageId = binary.BigEndian.Uint64(data[pointer:])

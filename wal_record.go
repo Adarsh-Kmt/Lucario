@@ -6,9 +6,10 @@ import (
 )
 
 type WALRecord struct {
-	LSN       uint64
-	Operation Operation
-	Payload   []byte
+	LSN         uint64
+	BPlusTreeId uint64
+	Operation   Operation
+	Payload     []byte
 }
 
 func EncodeWALRecord(record WALRecord) []byte {
@@ -16,6 +17,7 @@ func EncodeWALRecord(record WALRecord) []byte {
 	data := make([]byte, 0)
 
 	data = binary.BigEndian.AppendUint64(data, record.LSN)
+	data = binary.BigEndian.AppendUint64(data, record.BPlusTreeId)
 	data = binary.BigEndian.AppendUint16(data, uint16(record.Operation))
 
 	data = binary.BigEndian.AppendUint64(data, uint64(len(record.Payload)))
@@ -36,6 +38,9 @@ func DecodeWALRecord(data []byte) WALRecord {
 	pointer := 0
 
 	record.LSN = binary.BigEndian.Uint64(data[pointer:])
+	pointer += 8
+
+	record.BPlusTreeId = binary.BigEndian.Uint64(data[pointer:])
 	pointer += 8
 
 	record.Operation = Operation(binary.BigEndian.Uint16(data[pointer:]))

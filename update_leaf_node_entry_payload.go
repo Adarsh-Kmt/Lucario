@@ -3,17 +3,15 @@ package lucario
 import "encoding/binary"
 
 type UpdateLeafNodeEntryPayload struct {
-	BPlusTreeId uint64
-	PageId      uint64
-	Key         []byte
-	Value       []byte
+	PageId uint64
+	Key    []byte
+	Value  []byte
 }
 
 func EncodeUpdateLeafNodeEntryPayload(payload UpdateLeafNodeEntryPayload) []byte {
 
 	data := make([]byte, 0)
 
-	data = binary.BigEndian.AppendUint64(data, payload.BPlusTreeId)
 	data = binary.BigEndian.AppendUint64(data, payload.PageId)
 
 	data = binary.BigEndian.AppendUint16(data, uint16(len(payload.Key)))
@@ -31,9 +29,6 @@ func DecodeUpdateLeafNodeEntryPayload(data []byte) UpdateLeafNodeEntryPayload {
 
 	pointer := 0
 
-	payload.BPlusTreeId = binary.BigEndian.Uint64(data[pointer : pointer+8])
-
-	pointer += 8
 	payload.PageId = binary.BigEndian.Uint64(data[pointer : pointer+8])
 
 	pointer += 8
