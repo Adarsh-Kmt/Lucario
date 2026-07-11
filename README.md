@@ -4,7 +4,7 @@
 
 # Lucario
 
-Lucario is a physical Write-Ahead Logging (WAL) implementation designed for my storage engine, [DragonDB](https://github.com/Adarsh-Kmt/DragonDB). It provides durability and crash recovery by recording page-level modifications before they are applied to disk and replaying committed operations after a crash.
+Lucario is a physical Write-Ahead Logging (WAL) implementation designed for my database storage engine, [DragonDB](https://github.com/Adarsh-Kmt/DragonDB). It provides durability and crash recovery by recording page-level modifications before they are applied to disk and replaying committed operations after a crash.
 
 ## Motivation
 
